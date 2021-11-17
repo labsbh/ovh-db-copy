@@ -1,0 +1,50 @@
+name: Import database dump
+
+on:
+  workflow_dispatch:
+    inputs:
+      service_from:
+        description: 'Form service'
+        required: true
+        default: 'mp1014899-001'
+      service_to:
+        description: 'To service'
+        required: true
+        default: 'mp1014899-001'
+      db_from:
+        description: 'From database'
+        required: true
+        default: 'orion_prod'
+      db_to:
+        description: 'To database'
+        required: true
+        default: 'orion_demo'
+env:
+  OVH_APP_KEY: ${{ secrets.OVH_APP_KEY }}
+  OVH_APP_SECRET: ${{ secrets.OVH_APP_SECRET }}
+  OVH_CONSUMER_KEY: ${{ secrets.OVH_CONSUMER_KEY }}
+  COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  COMPOSER_AUTH: '{"github-oauth":{"github.com":"${{ secrets.COMPOSER_AUTH_TOKEN }}"}}'
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install PHP extensions
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.0'
+          ini-values: memory_limit=-1
+          extensions: curl
+      - name: Cache Composer packages
+        uses: actions/cache@v1
+        with:
+          path: ~/.composer/cache
+          key: composer-${{ github.sha }}
+          restore-keys: composer-
+        continue-on-error: true
+      - name: Install project dependencies
+        run: composer install --no-progress --no-suggest --ansi --no-dev
+      - name: Copy database
+        run: php index.php ${{ github.event.inputs.service_from }} ${{ github.event.inputs.service_to }} ${{ github.event.inputs.db_from }} ${{ github.event.inputs.db_to }}

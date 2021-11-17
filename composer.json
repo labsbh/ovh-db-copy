@@ -1,0 +1,12 @@
+{
+    "require": {
+        "php": "^8.0",
+        "ext-curl": "*",
+        "ovh/ovh": "^3.0",
+        "symfony/console": "^5.3"
+    }
+    ,
+    "require-dev": {
+        "roave/security-advisories": "dev-latest"
+    }
+}
